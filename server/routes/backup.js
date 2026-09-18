@@ -3,13 +3,13 @@ import { Router, sendJson, readJson, badRequest, forbidden, notFound } from '../
 import { dbBytes, dbSize, replaceDb, flushToCloud } from '../lib/db.js';
 import { requireRole } from '../lib/auth.js';
 import { isCloud, backupCloud, listBackupsCloud, readBackupCloud } from '../lib/storage.js';
-import { ROOT } from '../lib/db.js';
+import { DATA_DIR } from '../lib/db.js';
 import { mkdirSync, writeFileSync, readFileSync, readdirSync, unlinkSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 export const backupRoutes = new Router();
 
-const LOCAL_DIR = join(ROOT, 'data', 'backups');
+const LOCAL_DIR = join(DATA_DIR, 'backups');
 const stamp = () => new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
 
 /** ينشئ نسخة احتياطية في المكان المناسب حسب وضع التخزين */

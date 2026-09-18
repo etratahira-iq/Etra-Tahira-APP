@@ -12,11 +12,26 @@ import { isCloud, loadDbBytes, saveDbBytes, acquireLock, releaseLock } from './s
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const ROOT = join(__dirname, '..', '..');
-export const DATA_DIR = isCloud ? join(tmpdir(), 'hst-data') : join(ROOT, 'data');
-export const UPLOADS_DIR = isCloud ? join(tmpdir(), 'hst-uploads') : join(ROOT, 'uploads');
+
+/**
+ * بيئات serverless (Vercel/Lambda) تملك نظام ملفات للقراءة فقط عدا /tmp،
+ * لذا نكتب هناك دائماً حتى لو لم يُربط التخزين السحابي بعد —
+ * وإلا انهارت الدالة عند محاولة إنشاء مجلد data داخل حزمة النشر.
+ */
+export const isServerless = isCloud
+  || !!process.env.VERCEL
+  || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+  || !!process.env.NETLIFY;
+
+export const DATA_DIR = isServerless ? join(tmpdir(), 'hst-data') : join(ROOT, 'data');
+export const UPLOADS_DIR = isServerless ? join(tmpdir(), 'hst-uploads') : join(ROOT, 'uploads');
 
 for (const dir of [DATA_DIR, UPLOADS_DIR]) {
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  try {
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  } catch (err) {
+    console.error('[تعذّر إنشاء مجلد التخزين]', dir, err.message);
+  }
 }
 
 const DB_PATH = process.env.DB_PATH || join(DATA_DIR, 'husseiniya.db');
