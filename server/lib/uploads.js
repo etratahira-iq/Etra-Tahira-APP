@@ -4,6 +4,7 @@ import { join, basename } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { UPLOADS_DIR } from './db.js';
 import { badRequest } from './http.js';
+import { isCloud, saveImageCloud, hasImageStore } from './storage.js';
 
 const MAX_BYTES = 4 * 1024 * 1024; // 4MB
 
@@ -22,7 +23,7 @@ const SIGNATURES = [
  * يحفظ صورة مرسلة كـ Data URL ويعيد المسار العام (/uploads/xxx.jpg).
  * يتحقق من: الصيغة، الحجم، والتوقيع الثنائي الفعلي للملف.
  */
-export function saveDataUrlImage(dataUrl, { label = 'الصورة' } = {}) {
+export function validateDataUrlImage(dataUrl, { label = 'الصورة' } = {}) {
   if (!dataUrl || typeof dataUrl !== 'string') throw badRequest(`${label}: لم يتم إرسال ملف`);
 
   const match = /^data:([\w/+.-]+);base64,([\s\S]+)$/.exec(dataUrl.trim());
@@ -48,8 +49,25 @@ export function saveDataUrlImage(dataUrl, { label = 'الصورة' } = {}) {
   const sig = SIGNATURES.find((s) => s.test(buf));
   if (!sig) throw badRequest(`${label}: نوع الصورة غير مدعوم (المسموح: JPG, PNG, WEBP, GIF)`);
 
-  const name = `${Date.now().toString(36)}-${randomBytes(6).toString('hex')}.${sig.ext}`;
-  writeFileSync(join(UPLOADS_DIR, name), buf);
+  return { buf, ext: sig.ext, mime: sig.mime, dataUrl: dataUrl.trim() };
+}
+
+/**
+ * يحفظ صورة مرسلة كـ Data URL ويعيد مسارها العام.
+ * محلياً: تُكتب في مجلد uploads. سحابياً: تُرفع إلى Vercel Blob / Cloudinary.
+ */
+export async function saveDataUrlImage(dataUrl, { label = 'الصورة' } = {}) {
+  const file = validateDataUrlImage(dataUrl, { label });
+
+  if (isCloud) {
+    if (!hasImageStore) {
+      throw badRequest('لم يتم إعداد تخزين الصور بعد — أضف Vercel Blob من إعدادات الاستضافة');
+    }
+    return saveImageCloud(file.buf, file);
+  }
+
+  const name = `${Date.now().toString(36)}-${randomBytes(6).toString('hex')}.${file.ext}`;
+  writeFileSync(join(UPLOADS_DIR, name), file.buf);
   return `/uploads/${name}`;
 }
 
@@ -59,11 +77,11 @@ export function saveDataUrlImage(dataUrl, { label = 'الصورة' } = {}) {
  * - مسار /uploads/ موجود → يُبقى كما هو
  * - سلسلة فارغة → يمسح الصورة
  */
-export function resolveImageField(value, currentPath = '', label = 'الصورة') {
+export async function resolveImageField(value, currentPath = '', label = 'الصورة') {
   const v = typeof value === 'string' ? value.trim() : '';
   if (v === '') return '';
   if (v.startsWith('data:')) {
-    const path = saveDataUrlImage(v, { label });
+    const path = await saveDataUrlImage(v, { label });
     if (currentPath) removeUpload(currentPath);
     return path;
   }
@@ -74,6 +92,7 @@ export function resolveImageField(value, currentPath = '', label = 'الصورة
 
 /** يحذف ملفاً مرفوعاً (يتجاهل أي مسار خارج مجلد المرفوعات) */
 export function removeUpload(publicPath) {
+  if (isCloud) return;   // ملفات Blob تُدار من لوحة الاستضافة
   if (!publicPath || !publicPath.startsWith('/uploads/')) return;
   const file = join(UPLOADS_DIR, basename(publicPath));
   if (!file.startsWith(UPLOADS_DIR)) return;

@@ -27,7 +27,7 @@ adminSettingsRoutes.put('/settings', async (req, res) => {
   for (const [key, value] of Object.entries(body)) {
     if (!/^[a-z0-9_]{2,60}$/.test(key)) continue;
     if (IMAGE_SETTINGS.includes(key)) {
-      out[key] = resolveImageField(value, current[key] || '', 'الصورة');
+      out[key] = await resolveImageField(value, current[key] || '', 'الصورة');
       continue;
     }
     if (typeof value !== 'string' && typeof value !== 'number') continue;

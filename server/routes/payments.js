@@ -40,7 +40,7 @@ paymentRoutes.post('/deposit', async (req, res) => {
   const reference = v.str(body.reference, 'رقم العملية', { required: false, max: 80 });
 
   if (!body.receipt) throw badRequest('يرجى إرفاق صورة وصل الدفع');
-  const receiptPath = saveDataUrlImage(body.receipt, { label: 'وصل الدفع' });
+  const receiptPath = await saveDataUrlImage(body.receipt, { label: 'وصل الدفع' });
 
   run(
     `INSERT INTO payments (booking_id, user_id, method_id, method_name, amount, reference, receipt_path, status)

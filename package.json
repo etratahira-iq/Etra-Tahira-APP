@@ -12,7 +12,8 @@
     "dev": "node --watch server/index.js",
     "seed": "node server/db/seed.js",
     "reset": "node server/db/seed.js --reset",
-    "test": "node --test tests/"
+    "test": "node --test \"tests/*.test.js\"",
+    "test:cloud": "node --test tests/cloud-mode.test.js"
   },
   "dependencies": {}
 }

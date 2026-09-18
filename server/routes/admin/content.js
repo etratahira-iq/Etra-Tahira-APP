@@ -7,6 +7,23 @@ import { resolveImageField, removeUpload } from '../../lib/uploads.js';
 
 export const adminContentRoutes = new Router();
 
+/** يُعلّم محوّل حقل بأنه يرفع صورة (غير متزامن) ليُنتظر قبل بناء الصف */
+function imageField(fn) {
+  fn.isImage = true;
+  return fn;
+}
+
+/** يبني بيانات الصف مع انتظار حقول الصور */
+async function buildRow(fields, body, current) {
+  const data = {};
+  for (const [key, parse] of Object.entries(fields)) {
+    const raw = body[key] !== undefined ? body[key] : current?.[key];
+    const value = parse(raw, current || {}, body, key);
+    data[key] = parse.isImage ? await value : value;
+  }
+  return data;
+}
+
 /**
  * مُنشئ مسارات CRUD عامة لجدول محتوى.
  * fields: { name: (value, row) => normalizedValue }
@@ -51,8 +68,7 @@ function crud(router, path, table, fields, opts = {}) {
   router.post(path, async (req, res) => {
     requireRole(req, 'admin');
     const body = await readJson(req);
-    const data = {};
-    for (const [key, parse] of Object.entries(fields)) data[key] = parse(body[key], {}, body, key);
+    const data = await buildRow(fields, body, null);
 
     const cols = Object.keys(data);
     const result = run(
@@ -71,11 +87,7 @@ function crud(router, path, table, fields, opts = {}) {
     const body = await readJson(req);
 
     // الحقول غير المرسلة تحتفظ بقيمتها الحالية
-    const data = {};
-    for (const [key, parse] of Object.entries(fields)) {
-      const raw = body[key] !== undefined ? body[key] : current[key];
-      data[key] = parse(raw, current, body, key);
-    }
+    const data = await buildRow(fields, body, current);
     data.id = current.id;
 
     const cols = Object.keys(fields);
@@ -108,7 +120,7 @@ const F = {
   bool: (def = 0) => (val) => (val === undefined ? def : (v.bool(val) ? 1 : 0)),
   choice: (label, options) => (val) => v.oneOf(val, options, label),
   url: (label) => (val) => v.url(val, label),
-  image: (label, key) => (val, cur) => resolveImageField(val, cur?.[key] || '', label),
+  image: (label, key) => imageField((val, cur) => resolveImageField(val, cur?.[key] || '', label)),
   keep: (fallback = '') => (val) => (val === undefined || val === null ? fallback : val),
 };
 
@@ -163,11 +175,11 @@ crud(adminContentRoutes, '/events', 'events', {
 crud(adminContentRoutes, '/gallery', 'gallery', {
   title: F.text('عنوان الصورة', { max: 160 }),
   description: F.text('وصف الصورة', { max: 600 }),
-  image_path: (val, cur) => {
-    const path = resolveImageField(val, cur?.image_path || '', 'الصورة');
+  image_path: imageField(async (val, cur) => {
+    const path = await resolveImageField(val, cur?.image_path || '', 'الصورة');
     if (!path) throw badRequest('الصورة مطلوبة');
     return path;
-  },
+  }),
   category: F.choice('التصنيف', ['exterior', 'interior', 'occasions']),
   is_cover: F.bool(0),
   sort_order: F.num('الترتيب', { max: 9999, integer: true }),
