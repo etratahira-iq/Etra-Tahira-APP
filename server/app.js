@@ -5,7 +5,7 @@ import { migrate, ROOT, UPLOADS_DIR, bootFromCloud, flushToCloud } from './lib/d
 import { Router, sendJson, sendError, serveStatic, HttpError, notFound } from './lib/http.js';
 import { purgeExpiredSessions } from './lib/auth.js';
 import { ensureDefaults } from './lib/settings.js';
-import { isCloud, MODE, hasImageStore } from './lib/storage.js';
+import { isCloud, MODE, hasImageStore, storageEnvNames } from './lib/storage.js';
 import { ensureFirstAdmin } from './db/bootstrap.js';
 
 import { authRoutes } from './routes/auth.js';
@@ -35,6 +35,7 @@ api.get('/health', async (req, res) => {
     service: 'husseiniya-api',
     storage: MODE,
     image_store: hasImageStore,
+    storage_env: storageEnvNames(),
     time: new Date().toISOString(),
   });
 });

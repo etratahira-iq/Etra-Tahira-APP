@@ -43,6 +43,18 @@ const BACKUP_LIST = 'hst:backups';
 export const hasImageStore =
   MODE === 'file' || !!BLOB_TOKEN || !!(CLOUDINARY_CLOUD && CLOUDINARY_PRESET);
 
+/**
+ * أسماء متغيرات التخزين الموجودة فعلياً (أسماء فقط بلا قيم) —
+ * تساعد على معرفة سبب عدم التقاط الرمز عند إعداد الاستضافة.
+ */
+export function storageEnvNames() {
+  const pattern = /(KV_REST|UPSTASH_REDIS|BLOB_READ_WRITE|BLOB_STORE|CLOUDINARY)/;
+  return Object.keys(process.env)
+    .filter((k) => pattern.test(k))
+    .map((k) => (process.env[k] ? k : k + ' (فارغ)'))
+    .sort();
+}
+
 // ---------------------------- Upstash REST ----------------------------
 
 async function kv(cmd) {
