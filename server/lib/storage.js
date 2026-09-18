@@ -12,9 +12,23 @@
  */
 import { randomBytes } from 'node:crypto';
 
-const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || '';
-const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';
-const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || '';
+/**
+ * يبحث عن متغيّر البيئة بأي من الأسماء المعروفة، وكذلك بأي بادئة
+ * قد تضيفها منصة الاستضافة (مثل STORAGE_KV_REST_API_URL على Vercel).
+ */
+function findEnv(...names) {
+  for (const name of names) {
+    if (process.env[name]) return process.env[name];
+  }
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value && names.some((n) => key.endsWith('_' + n))) return value;
+  }
+  return '';
+}
+
+const KV_URL = findEnv('KV_REST_API_URL', 'UPSTASH_REDIS_REST_URL');
+const KV_TOKEN = findEnv('KV_REST_API_TOKEN', 'UPSTASH_REDIS_REST_TOKEN');
+const BLOB_TOKEN = findEnv('BLOB_READ_WRITE_TOKEN');
 const CLOUDINARY_CLOUD = process.env.CLOUDINARY_CLOUD_NAME || '';
 const CLOUDINARY_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET || '';
 
