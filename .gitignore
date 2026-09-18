@@ -1,0 +1,38 @@
+# الاعتماديات
+node_modules/
+
+# قاعدة البيانات — تحتوي بيانات المستخدمين وكلمات المرور المشفّرة
+data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# الملفات المرفوعة من المستخدمين (وصولات الدفع، صور المعرض)
+uploads/
+
+# أسرار البيئة
+.env
+.env.*
+!.env.example
+
+# سجلات ومخرجات
+*.log
+npm-debug.log*
+logs/
+coverage/
+.nyc_output/
+
+# ملفات النظام والمحررات
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
+
+# منصات النشر
+.vercel/
+.netlify/

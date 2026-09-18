@@ -1,0 +1,44 @@
+/* ==========================================================
+   الفاتورة الحرارية — 80mm
+   ========================================================== */
+
+@page {
+  size: 80mm auto;
+  margin: 3mm;
+}
+
+@media print {
+  html, body {
+    background: #fff !important;
+    margin: 0;
+    padding: 0;
+    width: 80mm;
+  }
+
+  /* إخفاء كل شيء ما عدا الفاتورة */
+  body * { visibility: hidden; }
+  .receipt, .receipt * { visibility: visible; }
+
+  .receipt {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    width: 74mm !important;
+    max-width: 74mm;
+    margin: 0;
+    padding: 0;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #000;
+    background: #fff;
+  }
+
+  .receipt__sep { border-top: 1px dashed #000; }
+  .receipt__title { font-size: 13px; }
+  .receipt__total { font-size: 12.5px; }
+
+  a[href]::after { content: none !important; }
+}

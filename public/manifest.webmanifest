@@ -1,0 +1,32 @@
+{
+  "name": "حسينية العترة الطاهرة",
+  "short_name": "العترة الطاهرة",
+  "description": "المنصة الرسمية لحسينية العترة الطاهرة — المحاضرات والمناسبات وحجز الحسينية والتبرعات.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf7f0",
+  "theme_color": "#12483a",
+  "icons": [
+    {
+      "src": "/img/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "حجز الحسينية", "url": "/#/book" },
+    { "name": "المحاضرات", "url": "/#/lectures" },
+    { "name": "تبرع الآن", "url": "/#/donations" }
+  ]
+}
