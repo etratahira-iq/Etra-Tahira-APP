@@ -28,7 +28,9 @@ function findEnv(...names) {
 
 const KV_URL = findEnv('KV_REST_API_URL', 'UPSTASH_REDIS_REST_URL');
 const KV_TOKEN = findEnv('KV_REST_API_TOKEN', 'UPSTASH_REDIS_REST_TOKEN');
-const BLOB_TOKEN = findEnv('BLOB_READ_WRITE_TOKEN');
+// Vercel قد يسمّيه BLOB_READ_WRITE_TOKEN أو — عند استخدام بادئة —
+// STORAGE_READ_WRITE_TOKEN حيث تحلّ البادئة محل كلمة BLOB
+const BLOB_TOKEN = findEnv('BLOB_READ_WRITE_TOKEN', 'READ_WRITE_TOKEN');
 const CLOUDINARY_CLOUD = process.env.CLOUDINARY_CLOUD_NAME || '';
 const CLOUDINARY_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET || '';
 
@@ -48,7 +50,7 @@ export const hasImageStore =
  * تساعد على معرفة سبب عدم التقاط الرمز عند إعداد الاستضافة.
  */
 export function storageEnvNames() {
-  const pattern = /(KV_REST|UPSTASH_REDIS|BLOB_READ_WRITE|BLOB_STORE|CLOUDINARY)/;
+  const pattern = /(KV_REST|UPSTASH_REDIS|READ_WRITE_TOKEN|STORE_ID|WEBHOOK_PUBLIC_KEY|CLOUDINARY)/;
   return Object.keys(process.env)
     .filter((k) => pattern.test(k))
     .map((k) => (process.env[k] ? k : k + ' (فارغ)'))
