@@ -68,9 +68,12 @@ body {
   line-height: 1.75;
   color: var(--ink);
   background: var(--ivory);
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  /* clip بدل hidden: يمنع التمرير الأفقي دون تعطيل position: sticky للهيدر */
+  overflow-x: clip;
 }
+
+html { overflow-x: clip; }
 
 h1, h2, h3, h4 {
   margin: 0 0 .5rem;
@@ -366,6 +369,7 @@ ul, ol { margin: 0 0 1rem; padding-inline-start: 1.4rem; }
 .modal {
   width: min(560px, 100%);
   max-height: 90vh;
+  max-height: 90dvh;   /* يتجنّب قفزات شريط متصفح الهاتف */
   overflow-y: auto;
   background: var(--paper);
   border-radius: var(--radius-lg);
@@ -479,6 +483,22 @@ ul, ol { margin: 0 0 1rem; padding-inline-start: 1.4rem; }
 .dl__row:last-child { border-bottom: none; padding-bottom: 0; }
 .dl__key { color: var(--ink-muted); font-size: .92rem; flex: none; }
 .dl__val { font-weight: 700; text-align: left; }
+
+/* ==========================================================
+   تحسينات اللمس — أهداف أكبر على الهواتف واللوحات
+   معيار آبل 44pt والأندرويد 48dp كحد أدنى للعنصر القابل للنقر
+   ========================================================== */
+
+@media (pointer: coarse), (max-width: 900px) {
+  /* الترتيب مهم: العام أولاً ثم المتغيّرات، وإلا غلب العام الخاص */
+  .btn { min-height: 48px; }
+  .btn--lg { min-height: 54px; }
+  .btn--sm { min-height: 44px; padding: .45rem 1rem; font-size: .92rem; }
+  .modal__close { width: 44px; height: 44px; }
+  .icon-btn { width: 44px; height: 44px; }
+  .input, .select, .textarea { min-height: 48px; }
+  .switch input, .choice input { width: 22px; height: 22px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }

@@ -6,7 +6,7 @@
 
 body.admin { background: var(--ivory-2); padding-bottom: 0; }
 
-.admin-layout { display: flex; min-height: 100vh; }
+.admin-layout { display: flex; min-height: 100vh; min-height: 100dvh; }
 
 /* ---------- الشريط الجانبي ---------- */
 
@@ -214,8 +214,17 @@ html[dir='rtl'] .sidebar--closed { transform: translateX(100%); }
 
 .login-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   padding: 1rem;
   background: linear-gradient(135deg, var(--green-deep), #0a2b23);
+}
+
+
+/* أهداف لمس أكبر داخل لوحة التحكم على الهاتف */
+@media (pointer: coarse), (max-width: 900px) {
+  .sidebar__link { min-height: 46px; }
+  .table--cards tbody td .btn { min-height: 42px; }
+  .toolbar .btn { min-height: 44px; }
 }
